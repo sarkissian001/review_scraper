@@ -57,11 +57,11 @@ func main() {
 		log.Fatal("Invalid source. Must be either 'playstore' or 'appstore'")
 	}
 
-	// Generate the file name with timestamp and modified appID
+	// Generate the file name with timestamp and app name
 	timestamp := time.Now().Format("2006-01-02_15-04-05")
-	fileName := strings.ReplaceAll(*appName, ".", "_") + "_" + *source + timestamp + "_" + ".json"
+	fileName := strings.ReplaceAll(*appName, ".", "_") + "_" + *source + "_" + timestamp + ".json"
 
-	// Save reviews to JSON file
+	// Save reviews to a JSON file
 	err = utils.OutputToJSON(reviewResults, fileName)
 	if err != nil {
 		log.Fatal(err)
