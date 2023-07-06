@@ -3,7 +3,8 @@ package main
 import (
 	"flag"
 	"log"
-	scrapers "review_scraper/Scrapers"
+	appstore "review_scraper/AppStore"
+	playstore "review_scraper/PlayStore"
 	utils "review_scraper/Utils"
 	"strings"
 	"time"
@@ -13,31 +14,52 @@ import (
 
 func main() {
 	// Command line flags
-	appID := flag.String("appID", "", "App package ID")
-	reviewNum := flag.Int("reviewNum", 0, "Number of reviews to scrape")
+	source := flag.String("source", "", "Source of the reviews (google or appstore)")
+	appName := flag.String("appName", "", "App Name")
+	appID := flag.Int("appID", 0, "ID of the App")
+	limit := flag.Int("limit", 0, "Number of reviews to scrape")
+	country := flag.String("country", "GB", "Optional Review Country | Default is `GB`")
+
 	flag.Parse()
 
-	if *appID == "" {
-		log.Fatal("Please provide an appID using the -appID flag.")
+	if *appName == "" {
+		log.Fatal("Please provide an appName using the -appName flag.")
+	}
+	if *source == "" {
+		log.Fatal("Please provide a source using the -source flag.")
 	}
 
-	// Create a GooglePlayReviewScraper instance
-	scraper := scrapers.NewGooglePlayReviewScraper(*appID, reviews.Options{
-		Number: *reviewNum,
-	})
+	var reviewResults interface{}
 
-	// Scrape reviews
-	reviewResults, err := scraper.ScrapeReviews()
-	if err != nil {
-		log.Fatal(err)
+	var err error
+
+	if *source == "playstore" {
+		// Create a GooglePlayReviewScraper instance
+		scraper := playstore.NewGooglePlayReviewScraper(*appName, reviews.Options{
+			Number: *limit,
+		})
+
+		// Scrape reviews
+		reviewResults, err = scraper.ScrapeReviews()
+		if err != nil {
+			log.Fatal(err)
+		}
+
+	} else if *source == "appstore" {
+		scraper := appstore.NewAppStoreScraper(*country, *appName, *appID, *limit)
+
+		reviewResults, err = scraper.Fetch()
+		if err != nil {
+			log.Fatal(err)
+		}
+
+	} else {
+		log.Fatal("Invalid source. Must be either 'playstore' or 'appstore'")
 	}
-
-	// Log the number of records processed
-	log.Printf("Total reviews processed: %d\n", len(reviewResults))
 
 	// Generate the file name with timestamp and modified appID
 	timestamp := time.Now().Format("2006-01-02_15-04-05")
-	fileName := timestamp + "_" + strings.ReplaceAll(*appID, ".", "_") + ".json"
+	fileName := strings.ReplaceAll(*appName, ".", "_") + "_" + *source + timestamp + "_" + ".json"
 
 	// Save reviews to JSON file
 	err = utils.OutputToJSON(reviewResults, fileName)

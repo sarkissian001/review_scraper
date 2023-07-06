@@ -35,9 +35,32 @@ To get started with this project, do the following:
 
  ### Usage
 
-```shell
-     go run main.go -appID <com.hellofresh.androidapp> -reviewNum <NUMBER_OF_REVIEWS_TO_GET>
+
 ```
+  -appID int
+        ID of the App
+  -appName string
+        App Name
+  -country GB
+        Optional Review Country | Default is GB (default "GB")
+  -limit int
+        Number of reviews to scrape
+  -source string
+        Source of the reviews (google or appstore)
+
+```
+ 
+ - Download PlayStore reviews
+
+     ```shell
+          go run main.go -appName com.spotify.music -limit 30 -source playstore
+     ```
+
+- Download AppStore reviews
+
+     ```shell
+     go run main.go -appName spotify -appID 324684580 -limit 30 -source appstore
+     ```
 
 ### Run Tests
 

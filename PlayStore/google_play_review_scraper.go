@@ -1,6 +1,9 @@
-package scrapers
+package playstore
 
 import (
+	"log"
+	"strconv"
+
 	"github.com/n0madic/google-play-scraper/pkg/reviews"
 )
 
@@ -25,6 +28,8 @@ func (scraper *GooglePlayReviewScraper) ScrapeReviews() (reviews.Results, error)
 	if err != nil {
 		return nil, err
 	}
+
+	log.Printf("Fetched.... %s reviews for app `%s` ", strconv.Itoa(len(r.Results)), scraper.AppID)
 
 	return r.Results, nil
 }
