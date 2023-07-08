@@ -41,24 +41,24 @@ func (b *AppStoreScraper) Fetch() ([]Review, error) {
 
 		var data map[string]interface{}
 		if err := json.Unmarshal(body, &data); err != nil {
-			return nil, fmt.Errorf("failed to parse response body: %s", err.Error())
+			return reviews, fmt.Errorf("failed to parse response body: %s", err.Error())
 		}
 
 		reviewsData, ok := data["data"].([]interface{})
 		if !ok {
-			return nil, fmt.Errorf("invalid reviews data format")
+			return reviews, fmt.Errorf("invalid reviews data format")
 		}
 
 		// Extract reviews and append them to the reviews slice
 		for _, review := range reviewsData {
 			reviewMap, ok := review.(map[string]interface{})
 			if !ok {
-				return nil, fmt.Errorf("invalid review format")
+				return reviews, fmt.Errorf("invalid review format")
 			}
 
 			attributes, ok := reviewMap["attributes"].(map[string]interface{})
 			if !ok {
-				return nil, fmt.Errorf("invalid attributes format")
+				return reviews, fmt.Errorf("invalid attributes format")
 			}
 
 			// Extract the review details
@@ -84,7 +84,6 @@ func (b *AppStoreScraper) Fetch() ([]Review, error) {
 
 			totalReviews++
 			if totalReviews >= b.limit {
-				log.Printf("Fetched.... %s reviews for app `%s` ", strconv.Itoa(len(reviews)), b.appName)
 				return reviews, nil // Stop fetching if the desired number of reviews is reached
 			}
 		}
@@ -93,7 +92,8 @@ func (b *AppStoreScraper) Fetch() ([]Review, error) {
 			break // No more reviews to fetch, exit the loop
 		}
 
-		offset += len(reviewsData)                                         // Increment the offset for the next page
+		offset += len(reviewsData) // Increment the offset for the next page
+		log.Printf("Fetched.... %s reviews for app `%s` ", strconv.Itoa(len(reviews)), b.appName)
 		time.Sleep(time.Duration(rand.Intn(2000)+1000) * time.Millisecond) // Sleep to avoid rate limiting
 	}
 
